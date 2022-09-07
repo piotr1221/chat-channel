@@ -1,6 +1,7 @@
 package org.acme.chatchannel;
 
 import io.smallrye.mutiny.Uni;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -30,16 +31,29 @@ public class GreetingResource {
         user.email = "ga@gmail.com";
         user.password = "123";
         user.active = true;
-        Uni<List<Server>> servers = Server.findAll().list();
-        user.servers = servers.convert().toCompletableFuture().get();
-        return user.persist();
+//        Uni<List<Server>> servers = Server.findAll().list();
+//        List<Server> servers = new ArrayList<>();
+        Server server1 = new Server();
+        server1.name = "SERVER 1";
+
+        Server server2 = new Server();
+        server2.name = "SERVER 2";
+
+        return Uni.combine().all()
+            .unis(server1.persist(), server2.persist())
+            .combinedWith(
+                responses -> {
+                    return responses;
+                }
+            ).onItem().transformToUni(servers -> {
+                user.servers = servers.stream().map(e -> (Server) e).collect(Collectors.toList());
+                return user.persist();
+            });
     }
 
     @GET
     @Path("/server")
-    public Uni<Server> createServer() {
-        Server s1 = new Server();
-        s1.name = "S1";
-        return s1.persist();
+    public void createServer() {
+
     }
 }
