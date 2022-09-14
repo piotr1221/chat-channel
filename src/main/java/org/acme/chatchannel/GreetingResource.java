@@ -1,11 +1,7 @@
 package org.acme.chatchannel;
 
 import io.smallrye.mutiny.Uni;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-import javax.print.attribute.standard.Media;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -42,11 +38,9 @@ public class GreetingResource {
         return Uni.combine().all()
             .unis(server1.persist(), server2.persist())
             .combinedWith(
-                responses -> {
-                    return responses;
-                }
+                responses -> responses
             ).onItem().transformToUni(servers -> {
-                user.servers = servers.stream().map(e -> (Server) e).collect(Collectors.toList());
+                //user.servers = servers.stream().map(e -> (Server) e).collect(Collectors.toList());
                 return user.persist();
             });
     }
